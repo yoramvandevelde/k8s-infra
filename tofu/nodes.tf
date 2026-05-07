@@ -1,11 +1,11 @@
 # nodes.tf
 locals {
   nodes = {
-    "k8s-cp-1" = { vmid = 310, ip = "10.10.30.101", role = "controlplane" }
-    "k8s-cp-2" = { vmid = 311, ip = "10.10.30.102", role = "controlplane" }
-    "k8s-cp-3" = { vmid = 312, ip = "10.10.30.103", role = "controlplane" }
-    "k8s-w-1"  = { vmid = 313, ip = "10.10.30.104", role = "worker" }
-    "k8s-w-2"  = { vmid = 314, ip = "10.10.30.105", role = "worker" }
+    "k8s-cp-1" = { vmid = 310, ip = "10.10.30.1", role = "controlplane" }
+    "k8s-cp-2" = { vmid = 311, ip = "10.10.30.2", role = "controlplane" }
+    "k8s-cp-3" = { vmid = 312, ip = "10.10.30.3", role = "controlplane" }
+    "k8s-w-1"  = { vmid = 313, ip = "10.10.30.4", role = "worker" }
+    "k8s-w-2"  = { vmid = 314, ip = "10.10.30.5", role = "worker" }
   }
 
   cp_nodes     = { for k, v in local.nodes : k => v if v.role == "controlplane" }

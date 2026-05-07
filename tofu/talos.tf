@@ -35,14 +35,14 @@ resource "proxmox_download_file" "talos" {
 # Machine configs
 data "talos_machine_configuration" "controlplane" {
   cluster_name     = "k8s-sifft"
-  cluster_endpoint = "https://10.10.30.101:6443"
+  cluster_endpoint = "https://10.10.30.1:6443"
   machine_type     = "controlplane"
   machine_secrets  = talos_machine_secrets.cluster.machine_secrets
 }
 
 data "talos_machine_configuration" "worker" {
   cluster_name     = "k8s-sifft"
-  cluster_endpoint = "https://10.10.30.101:6443"
+  cluster_endpoint = "https://10.10.30.1:6443"
   machine_type     = "worker"
   machine_secrets  = talos_machine_secrets.cluster.machine_secrets
 }
@@ -104,14 +104,14 @@ resource "talos_machine_configuration_apply" "this" {
 # Bootstrap
 resource "talos_machine_bootstrap" "this" {
   client_configuration = talos_machine_secrets.cluster.client_configuration
-  node                 = "10.10.30.101"
+  node                 = "10.10.30.1"
   depends_on           = [talos_machine_configuration_apply.this]
 }
 
 # Kubeconfig
 resource "talos_cluster_kubeconfig" "this" {
   client_configuration = talos_machine_secrets.cluster.client_configuration
-  node                 = "10.10.30.101"
+  node                 = "10.10.30.1"
   depends_on           = [talos_machine_bootstrap.this]
 }
 
