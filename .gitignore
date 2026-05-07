@@ -1,0 +1,7 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+.tfvars
+*.auto.tfvars
+talos/secrets.yaml
+.env
