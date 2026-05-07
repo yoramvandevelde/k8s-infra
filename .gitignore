@@ -5,3 +5,4 @@
 *.auto.tfvars
 talos/secrets.yaml
 .env
+terraform.tfvars
