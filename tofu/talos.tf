@@ -48,57 +48,6 @@ data "talos_machine_configuration" "worker" {
 }
 
 locals {
-  # kube-vip static pod manifest, deployed on every control plane node via machine.pods
-  kube_vip_manifest = yamlencode({
-    apiVersion = "v1"
-    kind       = "Pod"
-    metadata = {
-      name      = "kube-vip"
-      namespace = "kube-system"
-    }
-    spec = {
-      containers = [{
-        name  = "kube-vip"
-        image = "ghcr.io/kube-vip/kube-vip:v1.1.2"
-        args  = ["manager"]
-        env = [
-          { name = "vip_arp", value = "true" },
-          { name = "port", value = "6443" },
-          { name = "vip_interface", value = "eth0" },
-          { name = "vip_cidr", value = "32" },
-          { name = "cp_enable", value = "true" },
-          { name = "cp_namespace", value = "kube-system" },
-          { name = "vip_ddns", value = "false" },
-          { name = "vip_leaderelection", value = "true" },
-          { name = "vip_leaseduration", value = "5" },
-          { name = "vip_renewdeadline", value = "3" },
-          { name = "vip_retryperiod", value = "1" },
-          { name = "address", value = "10.10.30.200" },
-        ]
-        securityContext = {
-          capabilities = {
-            add = ["NET_ADMIN", "NET_RAW"]
-          }
-        }
-        volumeMounts = [{
-          mountPath = "/etc/kubernetes/admin.conf"
-          name      = "kubeconfig"
-        }]
-      }]
-      hostAliases = [{
-        hostnames = ["kubernetes"]
-        ip        = "127.0.0.1"
-      }]
-      hostNetwork = true
-      volumes = [{
-        name = "kubeconfig"
-        hostPath = {
-          path = "/etc/kubernetes/admin.conf"
-        }
-      }]
-    }
-  })
-
   common_patches = {
     for k, v in local.nodes : k => [
       yamlencode({
@@ -135,6 +84,7 @@ locals {
     ]
   }
 
+  # Control plane nodes get the VIP on eth0 in addition to their own IP
   cp_patches = {
     for k, v in local.cp_nodes : k => concat(
       local.common_patches[k],
@@ -144,10 +94,23 @@ locals {
             allowSchedulingOnControlPlanes = true
           }
         }),
-        # Deploy kube-vip as a static pod on every control plane node
         yamlencode({
           machine = {
-            pods = [local.kube_vip_manifest]
+            network = {
+              interfaces = [{
+                interface = "eth0"
+                addresses = ["${v.ip}/24"]
+                routes = [{
+                  network = "0.0.0.0/0"
+                  gateway = "10.10.30.254"
+                }]
+                dhcp = false
+                vip = {
+                  ip = "10.10.30.200"
+                }
+              }]
+              nameservers = ["10.10.20.53"]
+            }
           }
         }),
       ]
