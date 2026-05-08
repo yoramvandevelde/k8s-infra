@@ -1,8 +1,11 @@
 .terraform/
 *.tfstate
 *.tfstate.backup
+tofu/terraform.tfstate.*
 .tfvars
 *.auto.tfvars
 talos/secrets.yaml
 .env
 terraform.tfvars
+
+output/

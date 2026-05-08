@@ -3,6 +3,7 @@ resource "proxmox_virtual_environment_vm" "talos" {
   name      = each.key
   vm_id     = each.value.vmid
   node_name = "pve"
+  stop_on_destroy = true
 
   clone {
     vm_id = 9003
@@ -10,12 +11,18 @@ resource "proxmox_virtual_environment_vm" "talos" {
   }
 
   cpu {
-    cores = 4
+    cores = 8
     type  = "host"
   }
 
   memory {
-    dedicated = 8192
+    dedicated = 16384
+  }
+
+  disk {
+    datastore_id = "data-disk"
+    interface    = "scsi0"
+    size         = 32
   }
 
   network_device {

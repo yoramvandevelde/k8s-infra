@@ -2,23 +2,34 @@
 set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-KUBECONFIG="${REPO_ROOT}/output/kubeconfig"
-GITOPS_DIR="${REPO_ROOT}/k3s-gitops"
+REPO_ROOT="/output/.."
+GITOPS_DIR="/k3s-gitops"
+KUBECONFIG="/output/kubeconfig"
+TALOSCONFIG="/output/talosconfig"
 SEALED_SECRETS_GPG="${GITOPS_DIR}/config/sealed-secrets-master-key.yaml.gpg"
+SEALED_SECRETS_PASSPHRASE="${SEALED_SECRETS_PASSPHRASE:-}"
 CP1="10.10.30.1"
 ARGOCD_NS="argocd"
 
+export TALOSCONFIG
 export KUBECONFIG
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 wait_for_nodes() {
-  echo "→ Waiting for nodes..."
-  until kubectl get nodes 2>/dev/null | grep -q "Ready"; do
+  echo "→ Waiting for nodes to register..."
+  until kubectl get nodes 2>/dev/null | grep -q "NotReady\|Ready"; do
     sleep 5
   done
-  kubectl wait --for=condition=Ready node --all --timeout=300s
+  echo "→ Nodes registered, proceeding..."
+}
+
+wait_for_apiserver() {
+  echo "→ Waiting for API server to stabilize..."
+  sleep 30
+  until kubectl cluster-info 2>/dev/null | grep -q "is running"; do
+    sleep 5
+  done
+  echo "→ API server ready"
 }
 
 wait_for_deployment() {
@@ -42,6 +53,7 @@ install_cilium() {
     --set ipam.mode=kubernetes \
     --set routingMode=native \
     --set autoDirectNodeRoutes=true \
+    --set ipv4NativeRoutingCIDR="10.244.0.0/16" \
     --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
     --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
     --set cgroup.autoMount.enabled=false \
@@ -66,10 +78,22 @@ install_argocd() {
 }
 
 # ── 3. Sealed Secrets ─────────────────────────────────────────────────────────
+
 import_sealed_secrets() {
   echo "→ Importing Sealed Secrets master key..."
   kubectl create namespace sealed-secrets --dry-run=client -o yaml | kubectl apply -f -
-  gpg -d "${SEALED_SECRETS_GPG}" | kubectl apply -f -
+  echo "${SEALED_SECRETS_PASSPHRASE}" | gpg --batch --passphrase-fd 0 -d "${SEALED_SECRETS_GPG}" | kubectl apply -f -
+}
+
+install_sealed_secrets() {
+  echo "→ Installing Sealed Secrets..."
+  helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets --force-update
+
+  helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
+    --namespace sealed-secrets \
+    --version "2.17.2" \
+    --create-namespace \
+    --wait --timeout=3m
 }
 
 # ── 4. Root App-of-Apps ───────────────────────────────────────────────────────
@@ -81,8 +105,10 @@ apply_root_app() {
 # ── Main ──────────────────────────────────────────────────────────────────────
 wait_for_nodes
 install_cilium
+wait_for_apiserver
 install_argocd
+install_sealed_secrets
 import_sealed_secrets
 apply_root_app
 
-echo "✓ Bootstrap complete"
+echo "Bootstrap complete"

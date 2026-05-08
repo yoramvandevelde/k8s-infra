@@ -21,7 +21,7 @@ resource "talos_image_factory_schematic" "this" {
   })
 }
 
-# Download nocloud image naar Proxmox
+# Download nocloud image to Proxmox
 resource "proxmox_download_file" "talos" {
   content_type            = "iso"
   datastore_id            = "data-disk"
@@ -67,10 +67,13 @@ locals {
         }
       }),
       yamlencode({
-        apiVersion = "v1alpha1"
-        kind       = "HostnameConfig"
-        hostname   = k
-        auto       = "off"
+        cluster = {
+          network = {
+            cni = {
+              name = "none"
+            }
+          }
+        }
       })
     ]
   }
