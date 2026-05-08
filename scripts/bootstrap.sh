@@ -81,7 +81,6 @@ install_argocd() {
 
 import_sealed_secrets() {
   echo "→ Importing Sealed Secrets master key..."
-  kubectl create namespace sealed-secrets --dry-run=client -o yaml | kubectl apply -f -
   echo "${SEALED_SECRETS_PASSPHRASE}" | gpg --batch --passphrase-fd 0 -d "${SEALED_SECRETS_GPG}" | kubectl apply -f -
 }
 
@@ -90,9 +89,8 @@ install_sealed_secrets() {
   helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets --force-update
 
   helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
-    --namespace sealed-secrets \
+    --namespace kube-system \
     --version "2.17.2" \
-    --create-namespace \
     --wait --timeout=3m
 }
 
