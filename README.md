@@ -51,7 +51,8 @@ cp tofu/terraform.tfvars.example tofu/terraform.tfvars
 Edit `tofu/terraform.tfvars`:
 
 ```hcl
-proxmox_api_token = "root@pam!opentofu=<your-token>"
+proxmox_api_token         = "root@pam!opentofu=<your-token>"
+sealed_secrets_passphrase = "<gpg-passphrase-for-sealed-secrets-master-key>"
 ```
 
 ### 4. Deploy
@@ -65,7 +66,8 @@ tofu apply -target=proxmox_download_file.talos
 
 # Create the template (see step 2 above)
 
-# Deploy the full cluster
+# Deploy the full cluster — also runs bootstrap.sh automatically
+# which installs Cilium, ArgoCD, Sealed Secrets and applies the root app
 tofu apply
 ```
 
@@ -89,13 +91,14 @@ talosctl get nodes
 
 | Node | IP | Role |
 |------|-----|------|
-| k8s-cp-1 | 10.10.30.101 | control-plane |
-| k8s-cp-2 | 10.10.30.102 | control-plane |
-| k8s-cp-3 | 10.10.30.103 | control-plane |
-| k8s-w-1  | 10.10.30.104 | worker |
-| k8s-w-2  | 10.10.30.105 | worker |
+| k8s-cp-1 | 10.10.30.1 | control-plane |
+| k8s-cp-2 | 10.10.30.2 | control-plane |
+| k8s-cp-3 | 10.10.30.3 | control-plane |
+| k8s-w-1  | 10.10.30.4 | worker |
+| k8s-w-2  | 10.10.30.5 | worker |
+| VIP | 10.10.30.200 | control-plane (shared) |
 
-Control plane nodes also accept workloads (`allowSchedulingOnControlPlanes: true`).
+Control plane nodes share a VIP at `10.10.30.200` (configured via Talos). This is the Kubernetes API endpoint. Control plane nodes also accept workloads (`allowSchedulingOnControlPlanes: true`).
 
 ## Destroying the cluster
 
