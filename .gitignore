@@ -8,4 +8,5 @@ talos/secrets.yaml
 .env
 terraform.tfvars
 
+.claude
 output/
