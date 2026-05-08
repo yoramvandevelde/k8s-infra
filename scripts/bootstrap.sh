@@ -8,7 +8,7 @@ KUBECONFIG="/output/kubeconfig"
 TALOSCONFIG="/output/talosconfig"
 SEALED_SECRETS_GPG="${GITOPS_DIR}/config/sealed-secrets-master-key.yaml.gpg"
 SEALED_SECRETS_PASSPHRASE="${SEALED_SECRETS_PASSPHRASE:-}"
-CP1="10.10.30.1"
+CP1="10.10.30.200"
 ARGOCD_NS="argocd"
 
 export TALOSCONFIG
