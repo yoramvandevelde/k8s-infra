@@ -92,6 +92,15 @@ locals {
         yamlencode({
           cluster = {
             allowSchedulingOnControlPlanes = true
+            apiServer = {
+              extraArgs = {
+                oidc-issuer-url     = var.oidc_issuer_url
+                oidc-client-id      = var.oidc_client_id
+                oidc-username-claim = "preferred_username"
+                oidc-username-prefix = "-"
+                oidc-groups-claim   = "groups"
+              }
+            }
           }
         }),
         yamlencode({
