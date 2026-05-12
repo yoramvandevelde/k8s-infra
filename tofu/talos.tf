@@ -1,10 +1,10 @@
 # Secrets
 resource "talos_machine_secrets" "cluster" {
-  talos_version = "v1.13.0"
+  talos_version = "1.13.0"
 }
 
 data "talos_image_factory_extensions_versions" "this" {
-  talos_version = "v1.13.0"
+  talos_version = "1.13.0"
   filters = {
     names = ["qemu-guest-agent", "iscsi-tools", "util-linux-tools"]
   }
