@@ -11,7 +11,7 @@ resource "null_resource" "bootstrap" {
       docker run --rm \
         -v ${path.module}/../output:/output \
         -v ${path.module}/../scripts:/scripts \
-        -v ${path.module}/../k3s-gitops:/k3s-gitops \
+        -v ${path.module}/../k8s-gitops:/k8s-gitops \
         -e SEALED_SECRETS_PASSPHRASE='${var.sealed_secrets_passphrase}' \
         -e KUBECONFIG=/output/kubeconfig \
         -e TALOSCONFIG=/output/talosconfig \

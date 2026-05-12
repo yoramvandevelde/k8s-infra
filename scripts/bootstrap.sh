@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
 REPO_ROOT="/output/.."
-GITOPS_DIR="/k3s-gitops"
+GITOPS_DIR="/k8s-gitops"
 KUBECONFIG="/output/kubeconfig"
 TALOSCONFIG="/output/talosconfig"
 SEALED_SECRETS_GPG="${GITOPS_DIR}/config/sealed-secrets-master-key.yaml.gpg"

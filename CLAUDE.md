@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This repo has two layers:
 
 - **`tofu/`** — OpenTofu (open-source Terraform fork) that provisions a Talos Linux Kubernetes cluster on Proxmox.
-- **`k3s-gitops/`** — git submodule (separate repo at `github.com/yoramvandevelde/k3s-gitops`) managing cluster state via ArgoCD app-of-apps. Changes here must be committed and pushed to that repo before ArgoCD picks them up.
+- **`k8s-gitops/`** — git submodule (separate repo at `github.com/yoramvandevelde/k8s-gitops`) managing cluster state via ArgoCD app-of-apps. Changes here must be committed and pushed to that repo before ArgoCD picks them up.
 
 `output/` is gitignored and contains the generated `kubeconfig` and `talosconfig` after `tofu apply`.
 
@@ -41,7 +41,7 @@ tofu output -raw talosconfig > ../output/talosconfig
 
 1. **Cilium** (via Helm, directly — must come before any workloads because the cluster has no CNI)
 2. **ArgoCD** (via Helm)
-3. **Sealed Secrets** (via Helm), then imports the GPG-encrypted master key from `k3s-gitops/config/sealed-secrets-master-key.yaml.gpg`
+3. **Sealed Secrets** (via Helm), then imports the GPG-encrypted master key from `k8s-gitops/config/sealed-secrets-master-key.yaml.gpg`
 4. **Root app-of-apps** (`kubectl apply -f bootstrap/root.yaml`) — ArgoCD then self-manages everything else
 
 The Sealed Secrets master key must be present before ArgoCD syncs; without it, all `SealedSecret` resources will fail to decrypt.
@@ -61,10 +61,10 @@ The `infrastructure` Application excludes certain subdirectory files from its sy
 
 Seal a new secret without cluster access:
 ```bash
-kubeseal --cert k3s-gitops/config/sealed-secret-pub.crt --format yaml < secret.yaml > sealed-secret.yaml
+kubeseal --cert k8s-gitops/config/sealed-secret-pub.crt --format yaml < secret.yaml > sealed-secret.yaml
 ```
 
-The GPG-encrypted master key lives at `k3s-gitops/config/sealed-secrets-master-key.yaml.gpg`. Decrypt with the passphrase in `terraform.tfvars`.
+The GPG-encrypted master key lives at `k8s-gitops/config/sealed-secrets-master-key.yaml.gpg`. Decrypt with the passphrase in `terraform.tfvars`.
 
 ## Cluster topology
 
