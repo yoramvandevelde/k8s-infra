@@ -13,12 +13,10 @@ ARGOCD_NS="argocd"
 K8S_API_VIP="10.10.30.200"
 
 CP_NODES="10.10.30.1,10.10.30.2,10.10.30.3"
-ALL_NODES="10.10.30.1,10.10.30.2,10.10.30.3,10.10.30.4,10.10.30.5"
 
 export KUBECONFIG
 export TALOSCONFIG
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
 retry() {
   local attempts=$1
   local delay=$2
@@ -90,7 +88,6 @@ wait_for_deployment() {
     --timeout=300s
 }
 
-# ── 1. Cilium ─────────────────────────────────────────────────────────────────
 install_cilium() {
   echo "→ Installing Cilium..."
   helm repo add cilium https://helm.cilium.io/ --force-update
@@ -114,7 +111,6 @@ install_cilium() {
     --timeout=5m
 }
 
-# ── 2. ArgoCD ─────────────────────────────────────────────────────────────────
 install_argocd() {
   echo "→ Installing ArgoCD..."
   helm repo add argo https://argoproj.github.io/argo-helm --force-update
@@ -131,26 +127,42 @@ install_argocd() {
   wait_for_deployment "${ARGOCD_NS}" "argocd-server"
 }
 
-# ── 3. Sealed Secrets ─────────────────────────────────────────────────────────
-install_sealed_secrets() {
-  echo "→ Installing Sealed Secrets..."
+install_sealed_secrets_without_controller() {
+  echo "→ Installing Sealed Secrets without controller..."
   helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets --force-update
 
   retry 3 20 helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
     --namespace kube-system \
     --version "2.17.2" \
+    --set createController=false \
     --wait \
     --timeout=3m
 }
 
 import_sealed_secrets() {
   echo "→ Importing Sealed Secrets master key..."
+
+  test -n "${SEALED_SECRETS_PASSPHRASE}"
+  test -f "${SEALED_SECRETS_GPG}"
+
   echo "${SEALED_SECRETS_PASSPHRASE}" \
-    | gpg --batch --passphrase-fd 0 -d "${SEALED_SECRETS_GPG}" \
+    | gpg --batch --yes --passphrase-fd 0 -d "${SEALED_SECRETS_GPG}" \
     | kubectl apply -f -
 }
 
-# ── 4. Root App-of-Apps ───────────────────────────────────────────────────────
+start_sealed_secrets_controller() {
+  echo "→ Starting Sealed Secrets controller..."
+
+  retry 3 20 helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
+    --namespace kube-system \
+    --version "2.17.2" \
+    --set createController=true \
+    --wait \
+    --timeout=3m
+
+  kubectl -n kube-system rollout status deploy/sealed-secrets --timeout=180s
+}
+
 apply_root_app() {
   echo "→ Applying root App-of-Apps..."
   kubectl apply -f "${GITOPS_DIR}/bootstrap/root.yaml"
@@ -167,8 +179,11 @@ wait_for_talos_health
 wait_for_kube_api
 
 install_argocd
-install_sealed_secrets
+
+install_sealed_secrets_without_controller
 import_sealed_secrets
+start_sealed_secrets_controller
+
 apply_root_app
 
 echo "Bootstrap complete"
