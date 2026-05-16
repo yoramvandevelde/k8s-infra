@@ -272,6 +272,11 @@ wait_for_kube_api
 
 install_argocd
 
+# ArgoCD Helm creates argocd-secret without the annotation SealedSecrets requires
+# to take ownership. Adding it here lets the controller update it once platform-edge syncs.
+kubectl annotate secret argocd-secret -n "${ARGOCD_NS}" \
+  sealedsecrets.bitnami.com/managed=true --overwrite
+
 install_sealed_secrets_without_controller
 import_sealed_secrets
 start_sealed_secrets_controller
