@@ -108,17 +108,10 @@ locals {
             network = {
               interfaces = [{
                 interface = "eth0"
-                addresses = ["${v.ip}/24"]
-                routes = [{
-                  network = "0.0.0.0/0"
-                  gateway = "10.10.30.254"
-                }]
-                dhcp = false
                 vip = {
                   ip = "10.10.30.200"
                 }
               }]
-              nameservers = ["10.10.20.53"]
             }
           }
         }),
@@ -136,7 +129,7 @@ resource "talos_machine_configuration_apply" "this" {
   for_each                    = local.nodes
   client_configuration        = talos_machine_secrets.cluster.client_configuration
   machine_configuration_input = each.value.role == "controlplane" ? data.talos_machine_configuration.controlplane.machine_configuration : data.talos_machine_configuration.worker.machine_configuration
-  node                        = [for addrs in proxmox_virtual_environment_vm.talos[each.key].ipv4_addresses : addrs[0] if length(addrs) > 0 && addrs[0] != "127.0.0.1"][0]
+  node                        = local.nodes[each.key].ip
   config_patches              = each.value.role == "controlplane" ? local.cp_patches[each.key] : local.worker_patches[each.key]
   depends_on                  = [proxmox_virtual_environment_vm.talos]
 }

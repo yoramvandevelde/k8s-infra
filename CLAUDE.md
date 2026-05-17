@@ -90,11 +90,12 @@ The GPG-encrypted master key lives at `k8s-gitops/config/sealed-secrets-master-k
 
 | Node | IP | Role |
 |------|-----|------|
-| k8s-cp-1 | 10.10.30.101 | control-plane |
-| k8s-cp-2 | 10.10.30.102 | control-plane |
-| k8s-cp-3 | 10.10.30.103 | control-plane |
-| k8s-w-1  | 10.10.30.104 | worker |
-| k8s-w-2  | 10.10.30.105 | worker |
+| k8s-cp-1 | 10.10.30.1 | control-plane |
+| k8s-cp-2 | 10.10.30.2 | control-plane |
+| k8s-cp-3 | 10.10.30.3 | control-plane |
+| k8s-w-1  | 10.10.30.4 | worker |
+| k8s-w-2  | 10.10.30.5 | worker |
+| k8s-w-3  | 10.10.30.6 | worker |
 
 VIP: `10.10.30.200` (shared across control-plane nodes via Talos VIP config). Control-plane nodes also schedule workloads (`allowSchedulingOnControlPlanes: true`).
 

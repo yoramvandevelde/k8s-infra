@@ -46,7 +46,7 @@ CP_NODES="10.10.30.1,10.10.30.2,10.10.30.3"
 # Do not include INIT_NODE here, otherwise Talos discovers the init node twice.
 HEALTH_CP_NODES="10.10.30.2,10.10.30.3"
 
-WORKER_NODES="10.10.30.4,10.10.30.5"
+WORKER_NODES="10.10.30.4,10.10.30.5,10.10.30.6"
 INIT_NODE="10.10.30.1"
 
 export KUBECONFIG
