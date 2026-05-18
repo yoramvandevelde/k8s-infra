@@ -193,6 +193,7 @@ install_argocd() {
     --namespace "${ARGOCD_NS}" \
     --version "9.5.14" \
     --set configs.params."server\.insecure"=true \
+    --set dex.enabled=false \
     --wait \
     --timeout=5m
 
