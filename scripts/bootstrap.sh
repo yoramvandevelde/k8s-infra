@@ -161,7 +161,7 @@ install_cilium() {
 
   retry 3 20 helm upgrade --install cilium cilium/cilium \
     --namespace kube-system \
-    --version "1.17.3" \
+    --version "1.19.4" \
     --set k8sServiceHost="${K8S_API_VIP}" \
     --set k8sServicePort=6443 \
     --set kubeProxyReplacement=true \
@@ -214,7 +214,7 @@ install_sealed_secrets_without_controller() {
 
   retry 3 20 helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
     --namespace kube-system \
-    --version "2.17.2" \
+    --version "2.18.5" \
     --set createController=false \
     --wait \
     --timeout=3m
@@ -243,7 +243,7 @@ start_sealed_secrets_controller() {
   # safely and decrypt existing SealedSecret resources from Git.
   retry 3 20 helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
     --namespace kube-system \
-    --version "2.17.2" \
+    --version "2.18.5" \
     --set createController=true \
     --wait \
     --timeout=3m
