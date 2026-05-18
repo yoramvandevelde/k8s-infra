@@ -191,7 +191,7 @@ install_argocd() {
 
   retry 5 20 helm upgrade --install argocd argo/argo-cd \
     --namespace "${ARGOCD_NS}" \
-    --version "7.8.0" \
+    --version "9.5.14" \
     --set configs.params."server\.insecure"=true \
     --wait \
     --timeout=5m
