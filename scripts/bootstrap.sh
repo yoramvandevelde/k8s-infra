@@ -39,12 +39,7 @@ ARGOCD_NS="argocd"
 # Cilium is installed before any GitOps-managed workloads can exist.
 K8S_API_VIP="10.10.30.200"
 
-# All control-plane nodes. Used for low-level service checks.
-CP_NODES="10.10.30.1,10.10.30.2,10.10.30.3"
-
-# Talos health treats --init-node separately from --control-plane-nodes.
-# Do not include INIT_NODE here, otherwise Talos discovers the init node twice.
-HEALTH_CP_NODES="10.10.30.2,10.10.30.3"
+CP_NODES="10.10.30.1"
 
 WORKER_NODES="10.10.30.4,10.10.30.5,10.10.30.6"
 INIT_NODE="10.10.30.1"
@@ -93,7 +88,7 @@ wait_for_etcd() {
   until [ "$(
     talosctl --talosconfig "${TALOSCONFIG}" -n "${CP_NODES}" services \
       | awk '$2 == "etcd" && $3 == "Running" && $4 == "OK" { count++ } END { print count+0 }'
-  )" = "3" ]; do
+  )" = "1" ]; do
     echo "→ etcd not ready yet, retrying..."
     sleep 10
   done
@@ -128,7 +123,6 @@ wait_for_talos_health() {
   until talosctl --talosconfig "${TALOSCONFIG}" health \
     --nodes "${INIT_NODE}" \
     --endpoints "${INIT_NODE}" \
-    --control-plane-nodes "${HEALTH_CP_NODES}" \
     --worker-nodes "${WORKER_NODES}" \
     --init-node "${INIT_NODE}"; do
     echo "→ Talos cluster not healthy yet, retrying..."

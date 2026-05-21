@@ -5,6 +5,8 @@ locals {
     "k8s-w-1"  = { vmid = 304, ip = "10.10.30.4", role = "worker" }
     "k8s-w-2"  = { vmid = 305, ip = "10.10.30.5", role = "worker" }
     "k8s-w-3"  = { vmid = 306, ip = "10.10.30.6", role = "worker" }
+    "k8s-w-4"  = { vmid = 307, ip = "10.10.30.7", role = "worker" }
+    "k8s-w-5"  = { vmid = 308, ip = "10.10.30.8", role = "worker" }
   }
 
   cp_nodes     = { for k, v in local.nodes : k => v if v.role == "controlplane" }
