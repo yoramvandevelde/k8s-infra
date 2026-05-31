@@ -38,8 +38,12 @@ This repo has two layers:
 
 **Apps**
 - [Authentik](https://goauthentik.io) — identity provider (OIDC/SSO); first-time setup at `/if/flow/initial-setup/`
+- [Harbor](https://goharbor.io) — container registry with Trivy scanning, Cosign support, and OIDC via Authentik
 - [Headlamp](https://headlamp.dev) — Kubernetes web UI with OIDC login via Authentik
+- [Populi](https://git.sifft.io/yoram/populi) — personal finance tracker
 - [Recipit](https://github.com/yoramvandevelde/recipit) — personal recipe manager
+- [Vault](https://www.vaultproject.io) — secrets management with Raft storage
+- [Woodpecker CI](https://woodpecker-ci.org) — CI runner with Forgejo integration and Harbor image push
 
 ---
 
@@ -52,6 +56,7 @@ This repo has two layers:
 | k8s-cp-3 | 10.10.30.3 | control-plane |
 | k8s-w-1  | 10.10.30.4 | worker |
 | k8s-w-2  | 10.10.30.5 | worker |
+| k8s-w-3  | 10.10.30.6 | worker |
 | VIP      | 10.10.30.200 | Kubernetes API (shared across control-plane) |
 
 Control-plane nodes also schedule workloads (`allowSchedulingOnControlPlanes: true`). Talos Linux is immutable — no SSH access; use `talosctl` for node-level operations.
