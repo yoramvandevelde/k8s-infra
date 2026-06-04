@@ -1,3 +1,6 @@
 [submodule "k8s-gitops"]
 	path = k8s-gitops
 	url = https://git.sifft.io/yoram/k8s-gitops.git
+[submodule "gitops"]
+	path = gitops
+	url = https://git.sifft.io/yoram/gitops.git

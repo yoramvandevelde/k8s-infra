@@ -90,14 +90,16 @@ The GPG-encrypted master key lives at `k8s-gitops/config/sealed-secrets-master-k
 
 | Node | IP | Role |
 |------|-----|------|
-| k8s-cp-1 | 10.10.30.1 | control-plane |
-| k8s-cp-2 | 10.10.30.2 | control-plane |
-| k8s-cp-3 | 10.10.30.3 | control-plane |
-| k8s-w-1  | 10.10.30.4 | worker |
-| k8s-w-2  | 10.10.30.5 | worker |
-| k8s-w-3  | 10.10.30.6 | worker |
+| k8s-cp-1 | 10.10.30.1 | control-plane (4 vCPU / 8 GB) |
+| k8s-cp-2 | 10.10.30.2 | control-plane (4 vCPU / 8 GB) |
+| k8s-cp-3 | 10.10.30.3 | control-plane (4 vCPU / 8 GB) |
+| k8s-w-1  | 10.10.30.4 | worker (8 vCPU / 16 GB) |
+| k8s-w-2  | 10.10.30.5 | worker (8 vCPU / 16 GB) |
+| k8s-w-3  | 10.10.30.6 | worker (8 vCPU / 16 GB) |
+| k8s-w-4  | 10.10.30.7 | worker (8 vCPU / 16 GB) |
+| k8s-w-5  | 10.10.30.8 | worker (8 vCPU / 16 GB) |
 
-VIP: `10.10.30.200` (shared across control-plane nodes via Talos VIP config). Control-plane nodes also schedule workloads (`allowSchedulingOnControlPlanes: true`).
+VIP: `10.10.30.200` (shared across control-plane nodes via Talos VIP config). Control-plane nodes do not schedule workloads (`allowSchedulingOnControlPlanes: false`).
 
 Talos Linux is immutable — no SSH. Use `talosctl` with `TALOSCONFIG=output/talosconfig` for node-level access.
 

@@ -30,6 +30,7 @@ resource "proxmox_download_file" "talos" {
   url                     = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/v1.13.0/nocloud-amd64.raw.gz"
   decompression_algorithm = "gz"
   overwrite               = false
+  overwrite_unmanaged     = true
 }
 
 # Machine configs
@@ -64,6 +65,9 @@ locals {
             }]
             nameservers = ["10.10.20.53"]
           }
+          time = {
+            servers = ["10.10.10.254"]
+          }
         }
       }),
       yamlencode({
@@ -80,7 +84,7 @@ locals {
             }
           }
         }
-      })
+      }),
     ]
   }
 
@@ -91,14 +95,14 @@ locals {
       [
         yamlencode({
           cluster = {
-            allowSchedulingOnControlPlanes = true
+            allowSchedulingOnControlPlanes = false
             apiServer = {
               extraArgs = {
-                oidc-issuer-url     = var.oidc_issuer_url
-                oidc-client-id      = var.oidc_client_id
-                oidc-username-claim = "preferred_username"
+                oidc-issuer-url      = var.oidc_issuer_url
+                oidc-client-id       = var.oidc_client_id
+                oidc-username-claim  = "preferred_username"
                 oidc-username-prefix = "-"
-                oidc-groups-claim   = "groups"
+                oidc-groups-claim    = "groups"
               }
             }
           }
@@ -112,6 +116,16 @@ locals {
                   ip = "10.10.30.200"
                 }
               }]
+            }
+          }
+        }),
+        yamlencode({
+          cluster = {
+            etcd = {
+              extraArgs = {
+                "heartbeat-interval" = "500"
+                "election-timeout"   = "5000"
+              }
             }
           }
         }),
@@ -129,9 +143,16 @@ resource "talos_machine_configuration_apply" "this" {
   for_each                    = local.nodes
   client_configuration        = talos_machine_secrets.cluster.client_configuration
   machine_configuration_input = each.value.role == "controlplane" ? data.talos_machine_configuration.controlplane.machine_configuration : data.talos_machine_configuration.worker.machine_configuration
-  node                        = [for addrs in proxmox_virtual_environment_vm.talos[each.key].ipv4_addresses : addrs[0] if length(addrs) > 0 && addrs[0] != "127.0.0.1"][0]
-  config_patches              = each.value.role == "controlplane" ? local.cp_patches[each.key] : local.worker_patches[each.key]
-  depends_on                  = [proxmox_virtual_environment_vm.talos]
+  node = each.value.role == "controlplane" ? (
+    [for addrs in proxmox_virtual_environment_vm.controlplane[each.key].ipv4_addresses : addrs[0] if length(addrs) > 0 && addrs[0] != "127.0.0.1"][0]
+  ) : (
+    [for addrs in proxmox_virtual_environment_vm.worker[each.key].ipv4_addresses : addrs[0] if length(addrs) > 0 && addrs[0] != "127.0.0.1"][0]
+  )
+  config_patches = each.value.role == "controlplane" ? local.cp_patches[each.key] : local.worker_patches[each.key]
+  depends_on = [
+    proxmox_virtual_environment_vm.controlplane,
+    proxmox_virtual_environment_vm.worker,
+  ]
 }
 
 # Bootstrap
@@ -155,4 +176,3 @@ data "talos_client_configuration" "this" {
   nodes                = [for k, v in local.nodes : v.ip]
   endpoints            = [for k, v in local.cp_nodes : v.ip]
 }
-

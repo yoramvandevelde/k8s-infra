@@ -1,3 +1,8 @@
+variable "gitops_repo" {
+  type      = string
+  sensitive = false
+}
+
 variable "proxmox_api_token" {
   type      = string
   sensitive = true
